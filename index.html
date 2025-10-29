@@ -1,3 +1,4 @@
+<!-- ...existing code... -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -285,6 +286,9 @@
                 const sideMarginCssPx = 6; // ajustar más pequeño para menos espacio lateral
                 const marginAboveBtnCss = 6; // espacio por encima del botón
 
+                // nuevo: pequeño espacio adicional por debajo de la captura (en px CSS)
+                const extraBottomCssPx = 12; // <-- aquí se aumenta el margen inferior
+
                 const leftCrop = Math.round(sideMarginCssPx * scale);
                 const rightCrop = Math.round(sideMarginCssPx * scale);
 
@@ -294,7 +298,11 @@
                     const btnRect = captureBtn.getBoundingClientRect();
                     const btnTopOnCanvas = Math.round((btnRect.top - containerRect.top) * scale);
                     const marginAboveBtnPx = Math.round(marginAboveBtnCss * scale);
-                    sHeight = btnTopOnCanvas - marginAboveBtnPx;
+                    const extraBottomPx = Math.round(extraBottomCssPx * scale);
+
+                    // Antes: sHeight = btnTopOnCanvas - marginAboveBtnPx;
+                    // Ahora añadimos un poco más por debajo (extraBottomPx), sin pasarnos del canvas
+                    sHeight = Math.min(canvas.height, btnTopOnCanvas - marginAboveBtnPx + extraBottomPx);
                 }
 
                 // calcular ancho final tras recortar los lados
@@ -361,3 +369,4 @@
     </script>
 </body>
 </html>
+<!-- ...existing code... -->
