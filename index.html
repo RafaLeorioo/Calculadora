@@ -43,7 +43,8 @@
         }
 
         select,
-        input[type="text"] {
+        input[type="text"],
+        input[type="time"] {
             width: 200px;
             padding: 10px;
             border: 1px solid #ccc;
@@ -56,7 +57,8 @@
         }
 
         select:focus,
-        input[type="text"]:focus {
+        input[type="text"]:focus,
+        input[type="time"]:focus {
             border-color: #6a82ab;
             outline: none;
         }
@@ -78,6 +80,30 @@
             font-size: 2.5em;
             font-weight: 700;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Botones añadidos */
+        .botones {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(90deg,#6a82ab,#3b3f7a);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(90deg,#3b7a3b,#6aa86a);
         }
     </style>
 </head>
@@ -146,6 +172,12 @@
             <label for="meDespierto">Me Despierto:</label>
             <input type="text" id="meDespierto" readonly>
         </div>
+
+        <!-- Botones añadidos -->
+        <div class="botones">
+            <button id="btnCaptura" class="btn" title="Capturar la sección">Capturar pantalla</button>
+            <button id="btnCopiarWhatsApp" class="btn secondary" title="Copiar texto formateado">Copiar para WhatsApp</button>
+        </div>
     </div>
 
     <script>
@@ -199,6 +231,76 @@
 
         // Calcular al cargar la página
         calcularHoras();
+    </script>
+
+    <!-- Cargar html2canvas desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // Función para capturar la sección .container
+        async function capturarPantalla() {
+            const target = document.querySelector('.container');
+            if (!target) return alert('No se encontró la sección a capturar.');
+            try {
+                const canvas = await html2canvas(target, {useCORS: true, scale: 2});
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                if (!blob) throw new Error('No se pudo generar la imagen.');
+
+                // Intentar copiar la imagen al portapapeles (navegadores modernos)
+                if (navigator.clipboard && window.ClipboardItem) {
+                    try {
+                        await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+                        return alert('Captura copiada al portapapeles. Puedes pegarla en WhatsApp.');
+                    } catch (e) {
+                        // continue to fallback
+                    }
+                }
+
+                // Fallback: descargar la imagen
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'captura.png';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                alert('Imagen descargada (fallback).');
+            } catch (err) {
+                alert('Error al crear la captura: ' + (err.message || err));
+            }
+        }
+
+        // Función para preparar y copiar texto formateado para WhatsApp
+        function copiarParaWhatsApp() {
+            const inicio = document.getElementById('inicioFeria').value || '';
+            const llegada = document.getElementById('llegadaColegio').value || '';
+            const trayectoText = (document.getElementById('salirViarTiempo').selectedOptions[0] || {}).text || '';
+            const salir = document.getElementById('salirViarResultado').value || '';
+            const despierto = document.getElementById('meDespierto').value || '';
+
+            const texto = 
+`Horario Feria
+Inicio: ${inicio}
+Llegada al colegio: ${llegada}
+Tiempo trayecto: ${trayectoText}
+Salir de Biar: ${salir}
+Me despierto: ${despierto}`;
+
+            // Intentar copiar al portapapeles y abrir WhatsApp Web con el mensaje prellenado
+            navigator.clipboard.writeText(texto).then(() => {
+                // Abrir WhatsApp Web / app con texto
+                const wa = 'https://wa.me/?text=' + encodeURIComponent(texto);
+                window.open(wa, '_blank');
+                alert('Texto copiado. Se ha abierto WhatsApp Web (si está disponible).');
+            }).catch(() => {
+                // Fallback: mostrar prompt para copiar manualmente
+                prompt('Copia este texto y pégalo en WhatsApp:', texto);
+            });
+        }
+
+        document.getElementById('btnCaptura').addEventListener('click', capturarPantalla);
+        document.getElementById('btnCopiarWhatsApp').addEventListener('click', copiarParaWhatsApp);
     </script>
 </body>
 </html>
