@@ -1,3 +1,4 @@
+<!-- ...existing code... -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Horas</title>
     <style>
+        /* ...existing code... */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -105,6 +107,52 @@
         .btn.secondary {
             background: linear-gradient(90deg,#3b7a3b,#6aa86a);
         }
+
+        /* Preview overlay (discreto, sin pop-ups) */
+        #previewOverlay {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: none;
+            background: rgba(0,0,0,0.6);
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 95%;
+            max-height: 90%;
+            box-sizing: border-box;
+        }
+        #previewBox {
+            background: #fff;
+            border-radius: 6px;
+            padding: 8px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            max-height: calc(90vh - 40px);
+            overflow: auto;
+        }
+        #previewBox img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        #previewActions {
+            margin-top: 8px;
+            display:flex;
+            gap:8px;
+            justify-content:center;
+        }
+        .tiny-btn {
+            padding:6px 10px;
+            border-radius:6px;
+            border:none;
+            cursor:pointer;
+            font-weight:600;
+            color:#fff;
+            background:linear-gradient(90deg,#6a82ab,#3b3f7a);
+        }
+        .tiny-btn.secondary { background:linear-gradient(90deg,#3b7a3b,#6aa86a); }
     </style>
 </head>
 <body>
@@ -180,11 +228,23 @@
         </div>
     </div>
 
+    <!-- Preview discreto para la captura (sin pop-ups) -->
+    <div id="previewOverlay" aria-hidden="true">
+        <div id="previewBox">
+            <img id="previewImg" alt="Captura">
+            <div id="previewActions">
+                <button id="btnGuardar" class="tiny-btn secondary">Guardar</button>
+                <button id="btnCerrarPreview" class="tiny-btn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        /* ...existing code... */
         function calcularHoras() {
             let inicioFeria = document.getElementById("inicioFeria").value;
-            let inicioFeriaHora = parseInt  (inicioFeria.split(":")[0]);
-            let inicioFeriaMinuto = parseInt(inicioFeria.split(":")[1]);
+            let inicioFeriaHora = parseInt  (inicioFeria.split(":")[0] || "0");
+            let inicioFeriaMinuto = parseInt(inicioFeria.split(":")[1] || "0");
 
             // Calcular llegada al colegio (1 hora antes del inicio de feria)
             let llegadaColegioHora = inicioFeriaHora - 1;
@@ -237,41 +297,93 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
-        // Función para capturar la sección .container
+        // Nueva función de captura: no muestra alerts, deja la imagen en vista previa y ofrece "Guardar"
+        // Ahora recorta JUSTO DEBAJO del bloque "Salir de Biar" (salirViarResultado)
         async function capturarPantalla() {
             const target = document.querySelector('.container');
-            if (!target) return alert('No se encontró la sección a capturar.');
-            try {
-                const canvas = await html2canvas(target, {useCORS: true, scale: 2});
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                if (!blob) throw new Error('No se pudo generar la imagen.');
+            const salirEl = document.getElementById('salirViarResultado');
+            const previewOverlay = document.getElementById('previewOverlay');
+            const previewImg = document.getElementById('previewImg');
+            const btnGuardar = document.getElementById('btnGuardar');
 
-                // Intentar copiar la imagen al portapapeles (navegadores modernos)
-                if (navigator.clipboard && window.ClipboardItem) {
-                    try {
-                        await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
-                        return alert('Captura copiada al portapapeles. Puedes pegarla en WhatsApp.');
-                    } catch (e) {
-                        // continue to fallback
+            if (!target) return; // silencioso si falta objetivo
+
+            try {
+                // Renderizar la sección completa a canvas
+                const canvas = await html2canvas(target, {useCORS: true, scale: 2});
+
+                // Preparar recorte POR ABAJO: recortar hasta justo DEBAJO del bloque "Salir de Biar"
+                let finalCanvas = canvas;
+                if (salirEl) {
+                    const containerRect = target.getBoundingClientRect();
+                    const salirRect = salirEl.getBoundingClientRect();
+                    const scale = canvas.width / containerRect.width;
+
+                    // calculamos la Y (en px del canvas) donde termina el elemento "salirViarResultado"
+                    // usamos salirRect.bottom (parte inferior del input) relativa al container
+                    const salirBottomOnCanvas = Math.round((salirRect.bottom - containerRect.top) * scale);
+
+                    // margen extra abajo para incluir todo el input y algo de espacio visual
+                    const marginBelowPx = Math.round(8 * scale);
+
+                    // Altura final: desde 0 hasta salirBottomOnCanvas + marginBelowPx
+                    let sHeight = salirBottomOnCanvas + marginBelowPx;
+
+                    // Asegurar límites válidos
+                    if (sHeight <= 10 || sHeight > canvas.height) {
+                        // si queda demasiado pequeño o mayor que el canvas, usar canvas completo
+                        sHeight = canvas.height;
+                    }
+
+                    if (sHeight < canvas.height) {
+                        const newCanvas = document.createElement('canvas');
+                        newCanvas.width = canvas.width;
+                        newCanvas.height = sHeight;
+                        const ctx = newCanvas.getContext('2d');
+                        // dibujar la parte superior desde 0 hasta sHeight (no se toca la parte superior)
+                        ctx.drawImage(canvas, 0, 0, canvas.width, sHeight, 0, 0, canvas.width, sHeight);
+                        finalCanvas = newCanvas;
                     }
                 }
 
-                // Fallback: descargar la imagen
+                // Crear blob y objeto URL para mostrar en la vista previa
+                const blob = await new Promise(resolve => finalCanvas.toBlob(resolve, 'image/png'));
+                if (!blob) return; // silencioso en fallo
+
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'captura.png';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-                alert('Imagen descargada (fallback).');
+                previewImg.src = url;
+
+                // Mostrar overlay (sin pop-ups)
+                previewOverlay.style.display = 'block';
+                previewOverlay.setAttribute('aria-hidden', 'false');
+
+                // Preparar botón Guardar (descarga bajo demanda)
+                btnGuardar.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'captura.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                };
+
+                // Intento silencioso de copiar imagen al portapapeles (si el navegador lo permite)
+                if (navigator.clipboard && window.ClipboardItem) {
+                    blob.arrayBuffer().then(buffer => {
+                        const clipboardItemInput = new ClipboardItem({ 'image/png': new Blob([buffer], {type: 'image/png'}) });
+                        navigator.clipboard.write([clipboardItemInput]).catch(() => {
+                            // en caso de fallo, no hacer nada (sin avisos)
+                        });
+                    }).catch(()=>{});
+                }
+
+                // Nota: no hay alerts ni prompts; la imagen queda visible hasta que cierres preview.
             } catch (err) {
-                alert('Error al crear la captura: ' + (err.message || err));
+                // silencioso: no mostrar alert; simplemente no hacer nada si falla
+                return;
             }
         }
 
-        // Función para preparar y copiar texto formateado para WhatsApp
         function copiarParaWhatsApp() {
             const inicio = document.getElementById('inicioFeria').value || '';
             const llegada = document.getElementById('llegadaColegio').value || '';
@@ -279,7 +391,7 @@
             const salir = document.getElementById('salirViarResultado').value || '';
             const despierto = document.getElementById('meDespierto').value || '';
 
-            const texto = 
+            const texto =
 `Horario Feria
 Inicio: ${inicio}
 Llegada al colegio: ${llegada}
@@ -287,20 +399,29 @@ Tiempo trayecto: ${trayectoText}
 Salir de Biar: ${salir}
 Me despierto: ${despierto}`;
 
-            // Intentar copiar al portapapeles y abrir WhatsApp Web con el mensaje prellenado
-            navigator.clipboard.writeText(texto).then(() => {
-                // Abrir WhatsApp Web / app con texto
-                const wa = 'https://wa.me/?text=' + encodeURIComponent(texto);
-                window.open(wa, '_blank');
-                alert('Texto copiado. Se ha abierto WhatsApp Web (si está disponible).');
-            }).catch(() => {
-                // Fallback: mostrar prompt para copiar manualmente
-                prompt('Copia este texto y pégalo en WhatsApp:', texto);
-            });
+            // Copiar texto silenciosamente; si falla, no mostrar alert
+            navigator.clipboard && navigator.clipboard.writeText(texto).catch(()=>{});
+            // Abrir WhatsApp Web en nueva pestaña (no intrusivo)
+            const wa = 'https://wa.me/?text=' + encodeURIComponent(texto);
+            window.open(wa, '_blank');
         }
+
+        // Cerrar preview discreto
+        document.getElementById('btnCerrarPreview').addEventListener('click', () => {
+            const previewOverlay = document.getElementById('previewOverlay');
+            const previewImg = document.getElementById('previewImg');
+            // liberar recurso
+            if (previewImg && previewImg.src) {
+                URL.revokeObjectURL(previewImg.src);
+                previewImg.src = '';
+            }
+            previewOverlay.style.display = 'none';
+            previewOverlay.setAttribute('aria-hidden', 'true');
+        });
 
         document.getElementById('btnCaptura').addEventListener('click', capturarPantalla);
         document.getElementById('btnCopiarWhatsApp').addEventListener('click', copiarParaWhatsApp);
     </script>
 </body>
 </html>
+<!-- ...existing code... -->
