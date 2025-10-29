@@ -7,6 +7,9 @@
     <title>Calculadora de Horas</title>
     <style>
         /* Márgenes laterales aún más reducidos y ajustes para captura */
+        html, body {
+            font-size: 18px; /* tamaño base aumentado para mejor legibilidad */
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -14,47 +17,48 @@
             justify-content: center;
             align-items: center;
             min-height: 85vh;
-            padding: 6px; /* reducido aún más */
+            padding: 8px; /* un poco más de espacio alrededor */
             background: linear-gradient(to right, #330033, #220427);
             box-sizing: border-box;
         }
 
         .container {
-            width: 100%;           /* ocupar casi todo el ancho disponible */
-            max-width: 420px;      /* ancho máximo menor para reducir laterales */
-            padding: 8px;          /* padding interno reducido (afecta visual + captura) */
+            width: 100%;
+            max-width: 520px; /* algo más ancho para que el texto no quede comprimido */
+            padding: 12px;     /* padding interno aumentado para mejor lectura */
             box-sizing: border-box;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            background-color: rgba(211, 211, 211, 0.9);
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+            background-color: rgba(211, 211, 211, 0.95);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
             height: auto;
         }
 
         .bloque {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         label {
             display: block;
             text-align: center;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             color: #000;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 1.05rem; /* etiquetas más grandes */
         }
 
         /* Inputs responsivos: ancho máximo reducido */
         select,
         input[type="text"],
         input[type="time"] {
-            width: min(240px, 100%);
-            padding: 9px;
+            width: min(320px, 100%);
+            padding: 12px;            /* padding aumentado para facilitar lectura y toque */
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 6px;
             box-sizing: border-box;
             text-align: center;
-            font-size: 15px;
+            font-size: 1rem;         /* mayor tamaño de texto en los campos */
             color: #000;
             transition: border-color 0.2s ease;
             display: inline-block;
@@ -62,29 +66,30 @@
 
         h1 {
             color: #000;
-            margin-bottom: 6px;
-            font-size: 2em;
-            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 2.6em;   /* título más grande */
+            font-weight: 800;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
         }
 
         .botones {
-            margin-top: 10px;
+            margin-top: 14px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 10px 14px;
-            border-radius: 6px;
+            padding: 12px 16px;   /* botón más grande y cómodo */
+            border-radius: 8px;
             border: none;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             color: #fff;
             background: linear-gradient(90deg,#6a82ab,#3b3f7a);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+            font-size: 1rem;
         }
 
         /* Preview overlay */
@@ -96,40 +101,41 @@
             z-index: 9999;
             display: none;
             background: rgba(0,0,0,0.55);
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             max-width: 95%;
-            max-height: 90%;
+            max-height: 92%;
             box-sizing: border-box;
         }
         #previewBox {
             background: #fff;
-            border-radius: 6px;
-            padding: 8px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-            max-height: calc(90vh - 40px);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+            max-height: calc(92vh - 40px);
             overflow: auto;
         }
         #previewBox img {
             display: block;
             max-width: 100%;
             height: auto;
-            border-radius: 4px;
+            border-radius: 6px;
         }
         #previewActions {
-            margin-top: 8px;
+            margin-top: 10px;
             display:flex;
-            gap:8px;
+            gap:10px;
             justify-content:center;
         }
         .tiny-btn {
-            padding:6px 10px;
-            border-radius:6px;
+            padding:8px 12px;
+            border-radius:8px;
             border:none;
             cursor:pointer;
-            font-weight:600;
+            font-weight:700;
             color:#fff;
             background:linear-gradient(90deg,#6a82ab,#3b3f7a);
+            font-size:0.95rem;
         }
         .tiny-btn.secondary { background:linear-gradient(90deg,#3b7a3b,#6aa86a); }
     </style>
@@ -274,7 +280,8 @@
             if (!target) return;
 
             try {
-                const canvas = await html2canvas(target, {useCORS: true, scale: 2});
+                // aumentar scale para que la captura sea nítida cuando el contenido es más grande
+                const canvas = await html2canvas(target, {useCORS: true, scale: 3});
                 let finalCanvas = canvas;
 
                 // crop vertical hasta justo arriba del botón (como antes)
@@ -286,8 +293,8 @@
                 const sideMarginCssPx = 6; // ajustar más pequeño para menos espacio lateral
                 const marginAboveBtnCss = 6; // espacio por encima del botón
 
-                // nuevo: pequeño espacio adicional por debajo de la captura (en px CSS)
-                const extraBottomCssPx = 12; // <-- aquí se aumenta el margen inferior
+                // pequeño espacio adicional por debajo de la captura (en px CSS)
+                const extraBottomCssPx = 16; // margen inferior aumentado ligeramente
 
                 const leftCrop = Math.round(sideMarginCssPx * scale);
                 const rightCrop = Math.round(sideMarginCssPx * scale);
@@ -300,8 +307,7 @@
                     const marginAboveBtnPx = Math.round(marginAboveBtnCss * scale);
                     const extraBottomPx = Math.round(extraBottomCssPx * scale);
 
-                    // Antes: sHeight = btnTopOnCanvas - marginAboveBtnPx;
-                    // Ahora añadimos un poco más por debajo (extraBottomPx), sin pasarnos del canvas
+                    // Añadimos un poco más por debajo (extraBottomPx), sin pasarnos del canvas
                     sHeight = Math.min(canvas.height, btnTopOnCanvas - marginAboveBtnPx + extraBottomPx);
                 }
 
