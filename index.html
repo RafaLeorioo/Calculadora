@@ -1,4 +1,3 @@
-<!-- ...existing code... -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,87 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Horas</title>
     <style>
-        /* ...existing code... */
+        /* Márgenes laterales aún más reducidos y ajustes para captura */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 90vh;
-            padding: 20px;
+            min-height: 85vh;
+            padding: 6px; /* reducido aún más */
             background: linear-gradient(to right, #330033, #220427);
             box-sizing: border-box;
         }
 
         .container {
-            width: 80%;
-            max-width: 600px;
-            padding: 10px;
+            width: 100%;           /* ocupar casi todo el ancho disponible */
+            max-width: 420px;      /* ancho máximo menor para reducir laterales */
+            padding: 8px;          /* padding interno reducido (afecta visual + captura) */
             box-sizing: border-box;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
             background-color: rgba(211, 211, 211, 0.9);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
             height: auto;
         }
 
         .bloque {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         label {
             display: block;
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #000;
             font-weight: 600;
         }
 
+        /* Inputs responsivos: ancho máximo reducido */
         select,
         input[type="text"],
         input[type="time"] {
-            width: 200px;
-            padding: 10px;
+            width: min(240px, 100%);
+            padding: 9px;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
             text-align: center;
-            font-size: 16px;
+            font-size: 15px;
             color: #000;
-            transition: border-color 0.3s ease;
-        }
-
-        select:focus,
-        input[type="text"]:focus,
-        input[type="time"]:focus {
-            border-color: #6a82ab;
-            outline: none;
-        }
-
-        input[type="text"][readonly] {
-            background-color: #eee;
-            color: #000;
-            cursor: not-allowed;
-        }
-
-        /* Estilo específico para el campo "Me Despierto" */
-        #meDespierto {
-            background-color: #a8e4a0; /* Un verde claro */
+            transition: border-color 0.2s ease;
+            display: inline-block;
         }
 
         h1 {
             color: #000;
-            margin-bottom: 5px;
-            font-size: 2.5em;
+            margin-bottom: 6px;
+            font-size: 2em;
             font-weight: 700;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
         }
 
-        /* Botones añadidos */
         .botones {
-            margin-top: 12px;
+            margin-top: 10px;
             display: flex;
             gap: 10px;
             justify-content: center;
@@ -101,14 +83,10 @@
             font-weight: 600;
             color: #fff;
             background: linear-gradient(90deg,#6a82ab,#3b3f7a);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
         }
 
-        .btn.secondary {
-            background: linear-gradient(90deg,#3b7a3b,#6aa86a);
-        }
-
-        /* Preview overlay (discreto, sin pop-ups) */
+        /* Preview overlay */
         #previewOverlay {
             position: fixed;
             left: 50%;
@@ -116,8 +94,8 @@
             transform: translate(-50%, -50%);
             z-index: 9999;
             display: none;
-            background: rgba(0,0,0,0.6);
-            padding: 12px;
+            background: rgba(0,0,0,0.55);
+            padding: 10px;
             border-radius: 8px;
             max-width: 95%;
             max-height: 90%;
@@ -127,7 +105,7 @@
             background: #fff;
             border-radius: 6px;
             padding: 8px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
             max-height: calc(90vh - 40px);
             overflow: auto;
         }
@@ -221,10 +199,9 @@
             <input type="text" id="meDespierto" readonly>
         </div>
 
-        <!-- Botones añadidos -->
+        <!-- Botones: sólo queda Capturar -->
         <div class="botones">
             <button id="btnCaptura" class="btn" title="Capturar la sección">Capturar pantalla</button>
-            <button id="btnCopiarWhatsApp" class="btn secondary" title="Copiar texto formateado">Copiar para WhatsApp</button>
         </div>
     </div>
 
@@ -240,34 +217,28 @@
     </div>
 
     <script>
-        /* ...existing code... */
+        /* cálculo de horas (sin cambios funcionales) */
         function calcularHoras() {
             let inicioFeria = document.getElementById("inicioFeria").value;
             let inicioFeriaHora = parseInt  (inicioFeria.split(":")[0] || "0");
             let inicioFeriaMinuto = parseInt(inicioFeria.split(":")[1] || "0");
 
-            // Calcular llegada al colegio (1 hora antes del inicio de feria)
             let llegadaColegioHora = inicioFeriaHora - 1;
             let llegadaColegio = (llegadaColegioHora < 10 ? "0" : "") + llegadaColegioHora + ":" + 
                                 (inicioFeriaMinuto < 10 ? "0" : "") + inicioFeriaMinuto;
             document.getElementById("llegadaColegio").value = llegadaColegio;
 
-            // Tiempo de trayecto seleccionado
             let salirViarTiempo = parseInt(document.getElementById("salirViarTiempo").value);
-
-            // Convertir llegada al colegio a minutos totales
             let llegadaColegioHoraSalir = parseInt(llegadaColegio.split(":")[0]);
             let llegadaColegioMinutoSalir = parseInt(llegadaColegio.split(":")[1]);
             let salirViarMinutosTotales = llegadaColegioHoraSalir * 60 + llegadaColegioMinutoSalir - salirViarTiempo;
 
-            // Convertir a hora y minutos
             let salirViarHora = Math.floor(salirViarMinutosTotales / 60);
             let salirViarMinuto = salirViarMinutosTotales % 60;
             let salirViar = (salirViarHora < 10 ? "0" : "") + salirViarHora + ":" + 
                            (salirViarMinuto < 10 ? "0" : "") + salirViarMinuto;
             document.getElementById("salirViarResultado").value = salirViar;
 
-            // Calcular hora de despertarse (1 hora antes de salir de Biar)
             let salirViarHoraDespierto = parseInt(salirViar.split(":")[0]);
             let salirViarMinutoDespierto = parseInt(salirViar.split(":")[1]);
             let meDespiertoMinutosTotales = salirViarHoraDespierto * 60 + salirViarMinutoDespierto - 60;
@@ -275,89 +246,84 @@
             let meDespiertoHora = Math.floor(meDespiertoMinutosTotales / 60);
             let meDespiertoMinuto = meDespiertoMinutosTotales % 60;
 
-            // Ajustar si es antes de medianoche
-            if (meDespiertoHora < 0) {
-                meDespiertoHora += 24;
-            }
+            if (meDespiertoHora < 0) meDespiertoHora += 24;
 
             let meDespierto = (meDespiertoHora < 10 ? "0" : "") + meDespiertoHora + ":" + 
                              (meDespiertoMinuto < 10 ? "0" : "") + meDespiertoMinuto;
             document.getElementById("meDespierto").value = meDespierto;
         }
 
-        // Ejecutar al cambiar cualquier campo
         document.getElementById("inicioFeria").addEventListener("change", calcularHoras);
         document.getElementById("salirViarTiempo").addEventListener("change", calcularHoras);
-
-        // Calcular al cargar la página
         calcularHoras();
     </script>
 
-    <!-- Cargar html2canvas desde CDN -->
+    <!-- html2canvas CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
-        // Nueva función de captura: no muestra alerts, deja la imagen en vista previa y ofrece "Guardar"
-        // Ahora recorta JUSTO DEBAJO del bloque "Salir de Biar" (salirViarResultado)
+        // Captura: reducir márgenes laterales recortando también los lados del canvas
         async function capturarPantalla() {
             const target = document.querySelector('.container');
-            const salirEl = document.getElementById('salirViarResultado');
+            const captureBtn = document.getElementById('btnCaptura');
             const previewOverlay = document.getElementById('previewOverlay');
             const previewImg = document.getElementById('previewImg');
             const btnGuardar = document.getElementById('btnGuardar');
 
-            if (!target) return; // silencioso si falta objetivo
+            if (!target) return;
 
             try {
-                // Renderizar la sección completa a canvas
                 const canvas = await html2canvas(target, {useCORS: true, scale: 2});
-
-                // Preparar recorte POR ABAJO: recortar hasta justo DEBAJO del bloque "Salir de Biar"
                 let finalCanvas = canvas;
-                if (salirEl) {
-                    const containerRect = target.getBoundingClientRect();
-                    const salirRect = salirEl.getBoundingClientRect();
-                    const scale = canvas.width / containerRect.width;
 
-                    // calculamos la Y (en px del canvas) donde termina el elemento "salirViarResultado"
-                    // usamos salirRect.bottom (parte inferior del input) relativa al container
-                    const salirBottomOnCanvas = Math.round((salirRect.bottom - containerRect.top) * scale);
+                // crop vertical hasta justo arriba del botón (como antes)
+                // y crop horizontal para reducir márgenes laterales (izq/der)
+                const containerRect = target.getBoundingClientRect();
+                const scale = canvas.width / containerRect.width;
 
-                    // margen extra abajo para incluir todo el input y algo de espacio visual
-                    const marginBelowPx = Math.round(8 * scale);
+                // márgenes CSS que queremos eliminar en la captura (en px CSS)
+                const sideMarginCssPx = 6; // ajustar más pequeño para menos espacio lateral
+                const marginAboveBtnCss = 6; // espacio por encima del botón
 
-                    // Altura final: desde 0 hasta salirBottomOnCanvas + marginBelowPx
-                    let sHeight = salirBottomOnCanvas + marginBelowPx;
+                const leftCrop = Math.round(sideMarginCssPx * scale);
+                const rightCrop = Math.round(sideMarginCssPx * scale);
 
-                    // Asegurar límites válidos
-                    if (sHeight <= 10 || sHeight > canvas.height) {
-                        // si queda demasiado pequeño o mayor que el canvas, usar canvas completo
-                        sHeight = canvas.height;
-                    }
-
-                    if (sHeight < canvas.height) {
-                        const newCanvas = document.createElement('canvas');
-                        newCanvas.width = canvas.width;
-                        newCanvas.height = sHeight;
-                        const ctx = newCanvas.getContext('2d');
-                        // dibujar la parte superior desde 0 hasta sHeight (no se toca la parte superior)
-                        ctx.drawImage(canvas, 0, 0, canvas.width, sHeight, 0, 0, canvas.width, sHeight);
-                        finalCanvas = newCanvas;
-                    }
+                // calcular top del botón relativo al container para recorte vertical
+                let sHeight = canvas.height;
+                if (captureBtn) {
+                    const btnRect = captureBtn.getBoundingClientRect();
+                    const btnTopOnCanvas = Math.round((btnRect.top - containerRect.top) * scale);
+                    const marginAboveBtnPx = Math.round(marginAboveBtnCss * scale);
+                    sHeight = btnTopOnCanvas - marginAboveBtnPx;
                 }
 
-                // Crear blob y objeto URL para mostrar en la vista previa
+                // calcular ancho final tras recortar los lados
+                const sWidth = canvas.width - leftCrop - rightCrop;
+
+                // Validar dimensiones mínimas
+                if (sWidth > 20 && sHeight > 20) {
+                    const newCanvas = document.createElement('canvas');
+                    newCanvas.width = sWidth;
+                    newCanvas.height = sHeight;
+                    const ctx = newCanvas.getContext('2d');
+                    // dibujar la región recortada: (leftCrop, 0) ancho sWidth, altura sHeight
+                    ctx.drawImage(canvas,
+                        leftCrop, 0,                // sx, sy
+                        sWidth, sHeight,            // sWidth, sHeight
+                        0, 0,                       // dx, dy
+                        sWidth, sHeight             // dWidth, dHeight
+                    );
+                    finalCanvas = newCanvas;
+                }
+
                 const blob = await new Promise(resolve => finalCanvas.toBlob(resolve, 'image/png'));
-                if (!blob) return; // silencioso en fallo
+                if (!blob) return;
 
                 const url = URL.createObjectURL(blob);
                 previewImg.src = url;
-
-                // Mostrar overlay (sin pop-ups)
                 previewOverlay.style.display = 'block';
                 previewOverlay.setAttribute('aria-hidden', 'false');
 
-                // Preparar botón Guardar (descarga bajo demanda)
                 btnGuardar.onclick = () => {
                     const a = document.createElement('a');
                     a.href = url;
@@ -367,50 +333,22 @@
                     a.remove();
                 };
 
-                // Intento silencioso de copiar imagen al portapapeles (si el navegador lo permite)
+                // intento silencioso de copiar al portapapeles (si permite)
                 if (navigator.clipboard && window.ClipboardItem) {
                     blob.arrayBuffer().then(buffer => {
                         const clipboardItemInput = new ClipboardItem({ 'image/png': new Blob([buffer], {type: 'image/png'}) });
-                        navigator.clipboard.write([clipboardItemInput]).catch(() => {
-                            // en caso de fallo, no hacer nada (sin avisos)
-                        });
+                        navigator.clipboard.write([clipboardItemInput]).catch(()=>{});
                     }).catch(()=>{});
                 }
 
-                // Nota: no hay alerts ni prompts; la imagen queda visible hasta que cierres preview.
             } catch (err) {
-                // silencioso: no mostrar alert; simplemente no hacer nada si falla
                 return;
             }
         }
 
-        function copiarParaWhatsApp() {
-            const inicio = document.getElementById('inicioFeria').value || '';
-            const llegada = document.getElementById('llegadaColegio').value || '';
-            const trayectoText = (document.getElementById('salirViarTiempo').selectedOptions[0] || {}).text || '';
-            const salir = document.getElementById('salirViarResultado').value || '';
-            const despierto = document.getElementById('meDespierto').value || '';
-
-            const texto =
-`Horario Feria
-Inicio: ${inicio}
-Llegada al colegio: ${llegada}
-Tiempo trayecto: ${trayectoText}
-Salir de Biar: ${salir}
-Me despierto: ${despierto}`;
-
-            // Copiar texto silenciosamente; si falla, no mostrar alert
-            navigator.clipboard && navigator.clipboard.writeText(texto).catch(()=>{});
-            // Abrir WhatsApp Web en nueva pestaña (no intrusivo)
-            const wa = 'https://wa.me/?text=' + encodeURIComponent(texto);
-            window.open(wa, '_blank');
-        }
-
-        // Cerrar preview discreto
         document.getElementById('btnCerrarPreview').addEventListener('click', () => {
             const previewOverlay = document.getElementById('previewOverlay');
             const previewImg = document.getElementById('previewImg');
-            // liberar recurso
             if (previewImg && previewImg.src) {
                 URL.revokeObjectURL(previewImg.src);
                 previewImg.src = '';
@@ -420,8 +358,6 @@ Me despierto: ${despierto}`;
         });
 
         document.getElementById('btnCaptura').addEventListener('click', capturarPantalla);
-        document.getElementById('btnCopiarWhatsApp').addEventListener('click', copiarParaWhatsApp);
     </script>
 </body>
 </html>
-<!-- ...existing code... -->
